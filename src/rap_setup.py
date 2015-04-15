@@ -1,20 +1,20 @@
 from distutils.core import setup, Extension
 
 module1 = Extension('RapLanV1',
-                    sources = ['rapv1.cpp'
-				,'rapv1ex.cpp'
-                    ,'netstru.cpp'
-                    ,'dproc.cpp'
-                    ,'ipohmac.cpp'
-                        ,'py3pcapif.cpp'
-                    	,'py3ifman.cpp'
-                        ,'py3pque.cpp'
+    sources = ['rapv1.cpp'
+        ,'rapv1ex.cpp'
+        ,'netstru.cpp'
+        ,'dproc.cpp'
+        ,'ipohmac.cpp'
+        ,'py3pcapif.cpp'
+        ,'py3ifman.cpp'
+        ,'py3pque.cpp'
                     	],
                     include_dirs= ["F:/Develop/WpdPack4.1.2/Include","F:/Develop/boost/1.43.0"],
                     define_macros = [("WIN32",None),
                     			("WPCAP",None),
                     			("HAVE_REMOTE",None)],
-                    library_dirs = ["F:/Develop/WpdPack4.1.2/Lib"],
+                    library_dirs = ["F:/Develop/WpdPack4.1.2/Lib/x64"],
                     libraries = ["wpcap","ws2_32","iphlpapi"],
                     extra_compile_args = ["/EHsc"]
                     )
