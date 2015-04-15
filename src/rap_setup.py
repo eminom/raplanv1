@@ -10,7 +10,7 @@ module1 = Extension('RapLanV1',
         ,'py3ifman.cpp'
         ,'py3pque.cpp'
                     	],
-                    include_dirs= ["F:/Develop/WpdPack4.1.2/Include","F:/Develop/boost/1.43.0"],
+                    include_dirs= ["F:/Develop/WpdPack4.1.2/Include","C:/Boost/include/boost-1_57"],
                     define_macros = [("WIN32",None),
                     			("WPCAP",None),
                     			("HAVE_REMOTE",None)],
