@@ -1,0 +1,22 @@
+                 "coarp2.py" ....................passed    	Test time:           17.9061
+                 "coarpa.py" ....................passed    	Test time:           31.5618
+                  "comac.py" ....................passed    	Test time:             1.125
+                "comachd.py" ....................passed    	Test time:           10.5936
+              "coretrbri.py" ....................passed    	Test time:           1.53098
+                "coshake.py" ....................passed    	Test time:           3.15613
+         "test_coudppack.py" ....................passed    	Test time:          0.328123
+             "test_ifman.py" ....................passed    	Test time:           0.29642
+              "test_pcap.py" ....................passed    	Test time:            21.031
+              "test_ping.py" ....................passed    	Test time:           3.35938
+         "test_sendqueue.py" ....................passed    	Test time:          0.749714
+           "test_shakeme.py" ....................passed    	Test time:           5.10913
+             "test_tcphd.py" ....................passed    	Test time:          0.671585
+          "test_tcphd_ex.py" ....................passed    	Test time:          0.384137
+           "test_trivial.py" ....................passed    	Test time:           4.41222
+          "test_trivial2.py" ....................passed    	Test time:           3.34355
+21 python file(s) detected.
+16 python file(s) are tested.
+16 passed, 0 failed
+
+105.562560081482 second(s) elpased.
+Test on Wed Sep  1 14:22:07 2010

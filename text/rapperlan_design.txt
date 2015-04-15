@@ -1,0 +1,59 @@
+RapperLan.( Goto Hell ) 
+
+6月29日. 
+
+实现细节:
+1.返回一个值, None
+Py_INCREF(Py_None);
+return Py_None;
+
+2.解析参数
+const char *name = NULL;
+if( !PyArg_ParseTuple(args,"s",&name) ) {
+   PyErr_SetString(PyExc_RuntimeError,"Missing parameter for me");
+   return NULL;  // 飞一个异常
+}
+
+
+3.输出
+PySys_WriteStdout
+PySys_WriteStderr
+
+char buf[1024];
+sprintf_s(buf,sizeof(buf),"Hello to %s\n",name);  //个人换行
+PySys_WriteStdout(buf);
+
+4.制作安装
+from distutil.core import setup,Extension
+详见Buuilding C and C++ Extension with distuitls
+
+5.添加inlcude的路径,
+   添加lib路径及指定链接lib,
+   定义preprocessor 宏
+见Extension
+在Py3的chm帮助文档中查询setup(). 
+distutils.core的那个setup,然后就可以看到Extension中的field了.(其中一些就是用来指定我们的东西)
+
+
+6. pcap_close如果参数为0, 那么出错. 
+(WpdPack真是郁闷. 不检测NULL???)
+
+6月30日.
+
+7.使用
+PyArg_ParseTuple中的参数"U"是需要一个Unicode串. 
+PyBytes_AsString, 获得char *, 从PyObject*
+PyUnicode_AsLatin1String
+
+给pcap_open的那个名字, 有前缀rpcap:// (也可以不要这个前缀)
+
+7月6日. 2o1o年
+模块测试
+关于AdDesc, Index, 还有PhyAddr的CoMac解析
+
+1.C for Python: NULL是存在的. 但是不能动它. 动了就要崩溃
+C的null在Py的tuple中露脸是<NULL>这个样子的. 不能访问. 只能打印整个tuple. 如果单独引用那一位null, 则程序崩溃. 显示0000访问(很明显了)
+
+构造一个PyUnicode, 如果后面的char*实际上是一个Multibytes sequence, 那么需要考虑用PyUnicode_FromUnicode
+
+

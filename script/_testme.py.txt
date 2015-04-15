@@ -1,0 +1,152 @@
+# -*- coding: cp936 -*-
+import socket,sys,os
+import time
+from comac import CoMac,CoIPv4Addr
+import RapLanV1
+
+def ShakeStream():
+    """Original shake mac frame"""
+    s1 = "001478327cf6001e8c97a9fb08004500006b28bc00004011cdd4c0a8014ec0a801530979097900574a26315f6c6274345f3023313238233030314538433937413946422330233023303a313237373839353732353a41646d696e6973747261746f723a5757572d38303130423833444138463a3131393a3000"
+    s2 = "001478327cf6001e8c97a9fb08004500007d290000004011cd7ec0a8014ec0a80153097909790069cfa9315f6c6274345f3023313238233030314538433937413946422330233023303a313237373839353732363a41646d696e6973747261746f723a5757572d38303130423833444138463a363239313435393ab0d7baa300b0e5bcb6bfaab7a2b2bf00"
+    s3 = "001478327cf6001e8c97a9fb08004500006a290f00004011cd82c0a8014ec0a80153097909790056495f315f6c6274345f3023313238233030314538433937413946422330233023303a313237373839353732373a41646d696e6973747261746f723a5757572d38303130423833444138463a3132303a00"
+    s4 = "001478327cf6001e8c97a9fb08004500006a2ed100004011c7c0c0a8014ec0a801530979097900564a5c315f6c6274345f3023313238233030314538433937413946422330233023303a313237373839353733303a41646d696e6973747261746f723a5757572d38303130423833444138463a3230393a00"
+    return [s1,s2,s3,s4]
+
+
+def ShakeStream2():
+    """Fake mac dested and fake mac sourced"""
+    s1 = "010203040506001e8c97a9fb08004500006b28bc00004011cdd4c0a8014ec0a801530979097900574a26315f6c6274345f3023313238233030314538433937413946422330233023303a313237373839353732353a41646d696e6973747261746f723a5757572d38303130423833444138463a3131393a3000"
+    s2 = "010203040506001e8c97a9fb08004500007d290000004011cd7ec0a8014ec0a80153097909790069cfa9315f6c6274345f3023313238233030314538433937413946422330233023303a313237373839353732363a41646d696e6973747261746f723a5757572d38303130423833444138463a363239313435393ab0d7baa300b0e5bcb6bfaab7a2b2bf00"
+    s3 = "010203040506001e8c97a9fb08004500006a290f00004011cd82c0a8014ec0a80153097909790056495f315f6c6274345f3023313238233030314538433937413946422330233023303a313237373839353732373a41646d696e6973747261746f723a5757572d38303130423833444138463a3132303a00"
+    s4 = "010203040506001e8c97a9fb08004500006a2ed100004011c7c0c0a8014ec0a801530979097900564a5c315f6c6274345f3023313238233030314538433937413946422330233023303a313237373839353733303a41646d696e6973747261746f723a5757572d38303130423833444138463a3230393a00"
+    return [s1,s2,s3,s4]
+
+def UdpHead1(): #This is for Feiqu :)
+        #8个字节长的UDP包头. source port:destinantion port:udp length:udp checksum
+        #including length and check sum
+    #return "0979097900564766"
+    return  "0979097900000000"
+
+def MsgShakeMe():
+    """Shake的UDP净荷"""
+    return "315f6c6274345f3023313238233030314538433937413946422330233023303a313237373932323138383a41646d696e6973747261746f723a5757572d38303130423833444138463a3230393a00"
+
+def ShakeMeNow():
+    """Shake的UDP净荷(Plain text密文)"""
+    return "1_lbt4_0#128#001E8C97A9FB#0#0#0:1277922188:Administrator:WWW-8010B83DA8F:209:" + '\0'
+
+def DstMac1():  #This mac for gateway
+    """下一个Mac(范例)"""
+    return "001ebd040240"
+
+def SrcMac1():  #This is me
+    """源Mac(范例), 在这里是我的Workstation"""
+    return "001e8c97a9fb"
+
+def ProtoMac1():  #Proto for ether
+    """Mac帧头里的协议字段, 2字节"""
+    return "0800"
+
+def CommIpHdr(): #Common IP header 20 bytes
+    """经典IP包头. 最后8个字节分别是源IP和目的IP"""
+    return "4500006a493a00004011ad5cc0a8014ec0a8014e"
+
+def FakeIpSrc():
+    """随机一个Ip出来(raw字节顺序)"""
+    import random
+    fakeip = ''
+    for i in range(0,4):
+        fakeip += hex(random.randint(1,255))[2:].rjust(2,'0')
+    return fakeip
+
+def IpSrc1():
+    """一个范例raw字节顺序的ip(192.168.1.78)"""
+    return "c0a8014e"
+
+def FakeIpDst():
+    return "c0a8014e"
+
+def HexStreamToBytes(strm):
+    if len(strm) % 2 != 0:
+        raise Exception("Cannot got it")
+    bs= b''
+    for si in [strm[i:i+2] for i in range(0,len(strm),2)]:
+        ei = bytes(chr(int(si,16)),'latin1')
+        bs += ei
+        #print(ei)
+    return bs
+
+def Latin1ToHexStream(latin1):
+    rvs = ""
+    for c in latin1:
+        rvs += hex(ord(c))[2:].rjust(2,'0')
+    return rvs
+
+def ShakeItBaby(dst,cnt,intv):
+    """
+        udp packet for fq
+        no big deal
+        在UDP包上发震动. 对任何peer都有效.(就这个版本)
+        缺点是要用System的socket来发出去. 如果开了Fq, 那么就会说, 绑定错误
+            """
+    sd = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+    sd.bind(('',2425))
+    sd.connect((dst,2425) )
+    
+    for i in range(0,cnt):
+        for s in ShakeStream():
+            sd.send(HexStreamToBytes(s)[42:])
+        time.sleep(intv)
+        print('*',end='',file=sys.stdout)
+        sys.stdout.flush()
+    sd.close()
+    print()
+    return True
+
+def Test100(ino,src_ip,src_port,dst_ip,dst_port):
+    
+    from retrbri import ResolveIPtoMacByArpTable,RetrieveArp
+    from coport import CoPort
+    
+    arp = RetrieveArp()
+    dev1 = RapLanV1.PcapIf(name = RapLanV1.AdList()[int(ino)])
+    print('"'+dev1.Description+'"')
+    
+    if True:
+        len(CommIpHdr())%2==0 or print("God, CommIpHdr corrupted",file=sys.stderr)
+
+        #srciphx = ResolveIPtoMacByArpTable(arp,src_ip)[0]
+        #dstiphx = ResolveIPtoMacByArpTable(arp,dst_ip)[0]
+        
+        if True:#srciphx != None and dstiphx != None:
+            #macHead = repr(CoMac(dstiphx)) + repr(CoMac(srciphx)) + ProtoMac1()
+            
+            macHead = DstMac1() + SrcMac1() + ProtoMac1()
+            #macHead = repr(CoMac.RandomMac()) + repr(CoMac.RandomMac()) + ProtoMac1()
+            #ipHead = CommIpHdr()[:12*2] + FakeIpSrc() + FakeIpDst()   #ipHead = CommIpHdr()
+            #ipHead = CommIpHdr()[:12*2] + repr(CoIPv4Addr.RandomIPv4()) + FakeIpDst() #repr(CoIPv4Addr.RandomIPv4())
+            
+            #ipHead = CommIpHdr()[:12*2] + IpSrc1() + FakeIpDst()
+            
+            ipHead = CommIpHdr()[:12*2] + repr(CoIPv4Addr(src_ip)) + repr(CoIPv4Addr(dst_ip))
+            udpHead = CoPort(src_port) + CoPort(dst_port) + ''.rjust(8,'0')
+            udpRaw = ipHead + udpHead + Latin1ToHexStream("Earth is so dangerous")
+                    #MsgShakeMe()
+                    #
+            w = dev1.Send(HexStreamToBytes(macHead + udpRaw ))
+            print("%d written"%w)
+        else:
+            print("Cannot resolve all ips given.")
+            
+    return "Completed"
+            
+
+if '__main__' == __name__:
+    #len(sys.argv) >= 2 and ShakeItBaby(sys.argv[1],20,0.133) and print("Completed")
+    #print(len(sys.argv)>=6
+     #    and Test100(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5])
+     #     or "Parameter needed")
+     pass
+
+
+    
